@@ -12,7 +12,14 @@ def getHtml(url):
     req = urllib2.Request(url=url, headers=header)
     result = urllib2.urlopen(req)  # 发起GET http服务
     html = result.read()  # 把结果通过.read()函数读取出来
-    html = unicode(html, "gbk").encode("utf8")
+    try:
+        html = html.decode('gb18030', 'replace').encode("utf8")
+    except Exception,err:
+        print err
+        try:
+            html = unicode(html, "gbk").encode("utf8")
+        except:
+            html = html.decode('utf-8', 'replace')
     return html
 
 def getCitys(provinceInfo,baseUrl):
@@ -155,74 +162,49 @@ def startX():
     starttime = datetime.datetime.now()##开始时间
     url = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/index.html";
     baseUrl = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/"
-    fo = open("G:\\Tem\\area_citys.csv", "w")
+    provinceFile = open("G:\\Tem\\area_citys.csv", "w")
     html = getHtml(url)
     provinces = getProvinceInfo(html)
-    saveProvinces(fo,provinces)
+    saveProvinces(provinceFile,provinces)
+    provinceFile.close()
+    
     for pro in provinces:
-        cityInfos = climbCityData(pro,baseUrl)
-        if not cityInfos is None:
-            saveCitys(fo,cityInfos)
-            print "省份："+pro.get("name")+"|城市数目：",len(cityInfos)
-            for cityInfo in cityInfos:
-                countys = climbCountyData(cityInfo,baseUrl)
-                countyBaseUrl = baseUrl+(pro.get("address").split("."))[0]+"/"
-                if not countys is None:
-                    saveCountys(fo,countys)
-                    print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区数目：",len(countys)
-                    for county in countys:
-                        towers = climbTowerData(county,countyBaseUrl)
-                        towerBaseUrl = countyBaseUrl+(((county.get("address").split("."))[0]).split("/"))[0]+"/"
-                        if not towers is None:
-                            saveTowers(fo,towers)  
-                            print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇数目：",len(towers)
-                            for tower in towers:
-                                villagetrs = climbVillagetrsData(tower,towerBaseUrl)
-                                if not villagetrs is None:
-                                    saveVillagetrs(fo,villagetrs)
-                                    print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇："+tower.get("name")+"|村居委会街道办数目：",len(villagetrs)
-    fo.close()
+        name = pro.get("name")
+        filePath = "G:\\Tem\\" + name.decode('UTF-8').encode('GBK')  + ".csv";
+        if os.path.exists(filePath):
+            print "文件已存在，不再重新生成：",filePath.decode('GBK').encode('UTF-8')
+            continue
+        else:
+            print "文件不存在，生成文件：",filePath.decode('GBK').encode('UTF-8')
+            fo = open(filePath, "w")
+            cityInfos = climbCityData(pro,baseUrl)
+            if not cityInfos is None:
+                saveCitys(fo,cityInfos)
+                print "省份："+pro.get("name")+"|城市数目：",len(cityInfos)
+                for cityInfo in cityInfos:
+                    countys = climbCountyData(cityInfo,baseUrl)
+                    countyBaseUrl = baseUrl+(pro.get("address").split("."))[0]+"/"
+                    if not countys is None:
+                        saveCountys(fo,countys)
+                        print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区数目：",len(countys)
+                        for county in countys:
+                            towers = climbTowerData(county,countyBaseUrl)
+                            towerBaseUrl = countyBaseUrl+(((county.get("address").split("."))[0]).split("/"))[0]+"/"
+                            if not towers is None:
+                                saveTowers(fo,towers)  
+                                print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇数目：",len(towers)
+                                for tower in towers:
+                                    villagetrs = climbVillagetrsData(tower,towerBaseUrl)
+                                    if not villagetrs is None:
+                                        saveVillagetrs(fo,villagetrs)
+                                        print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇："+tower.get("name")+"|村居委会街道办数目：",len(villagetrs)
+            fo.close()
+            print "省份数据生成完成：",name
+            
     endtime = datetime.datetime.now()
     print "用时（s）：",(endtime - starttime).seconds                                 
                                     
                                     
-# 1.获取地域内容  - 简单模式（中途可能会由于频繁拉取而报错）
-def start():
-    
-    starttime = datetime.datetime.now()##开始时间
-    url = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/index.html";
-    baseUrl = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/"
-    fo = open("G:\\Tem\\area.csv", "w")
-    html = getHtml(url)
-    provinces = getProvinceInfo(html)
-    
-    saveProvinces(fo,provinces)
-    for pro in provinces:
-        cityInfos = getCitys(pro,baseUrl)
-        if not cityInfos is None:
-            saveCitys(fo,cityInfos)
-            print "省份："+pro.get("name")+"|城市数目：",len(cityInfos)
-            for cityInfo in cityInfos:
-                countys = getCountys(cityInfo,baseUrl)
-                countyBaseUrl = baseUrl+(pro.get("address").split("."))[0]+"/"
-                if not countys is None:
-                    saveCountys(fo,countys)
-                    print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区数目：",len(countys)
-                    for county in countys:
-                        towers = getTowers(county,countyBaseUrl)
-                        towerBaseUrl = countyBaseUrl+(((county.get("address").split("."))[0]).split("/"))[0]+"/"
-                        if not towers is None:
-                            saveTowers(fo,towers)
-                            print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇数目：",len(towers)
-                            for tower in towers:
-                                villagetrs = getVillagetrs(tower,towerBaseUrl)
-                                if not villagetrs is None:
-                                    saveVillagetrs(fo,villagetrs)
-                                    print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇："+tower.get("name")+"|村居委会街道办数目：",len(villagetrs)
-    fo.close()                               
-    endtime = datetime.datetime.now()
-    print "用时（s）：",(endtime - starttime).seconds
-    
 ##开始拉取                                                        
 startX()
 
@@ -240,8 +222,8 @@ startX()
 #     print towntr.get("lastCode")," ",towntr.get("code")," ",towntr.get("name")," ",towntr.get("address")
 
 
-# tower = {'name': "沙面街道", 'address': "03/440103001.html", 'code': "440103001000", 'lastCode':"130000000000"}
-# baseUrl = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/44/01/"
+# tower = {'name': "常张乡", 'address': "28/140428202.html", 'code': "440103001000", 'lastCode':"130000000000"}
+# baseUrl = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/14/04/"
 # Villagetrs = getVillagetrs(tower, baseUrl)
 # for Villagetr in Villagetrs:
 #     print Villagetr.get("lastCode")," ",Villagetr.get("code")," ",Villagetr.get("name")," ",Villagetr.get("address")," ",Villagetr.get("town&countryType")
