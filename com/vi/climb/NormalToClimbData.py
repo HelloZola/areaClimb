@@ -155,7 +155,7 @@ def startX():
     starttime = datetime.datetime.now()##开始时间
     url = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/index.html";
     baseUrl = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/"
-    fo = open("G:\\Tem\\area_citys.txt", "w")
+    fo = open("G:\\Tem\\area_citys.csv", "w")
     html = getHtml(url)
     provinces = getProvinceInfo(html)
     saveProvinces(fo,provinces)
@@ -181,8 +181,9 @@ def startX():
                                 if not villagetrs is None:
                                     saveVillagetrs(fo,villagetrs)
                                     print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇："+tower.get("name")+"|村居委会街道办数目：",len(villagetrs)
+    fo.close()
     endtime = datetime.datetime.now()
-    print "用时（s）：",(endtime - starttime).seconds                                
+    print "用时（s）：",(endtime - starttime).seconds                                 
                                     
                                     
 # 1.获取省份内容  - 简单模式
@@ -191,7 +192,7 @@ def start():
     starttime = datetime.datetime.now()##开始时间
     url = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/index.html";
     baseUrl = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2015/"
-    fo = open("G:\\Tem\\area.txt", "w")
+    fo = open("G:\\Tem\\area.csv", "w")
     html = getHtml(url)
     provinces = getProvinceInfo(html)
     
@@ -218,7 +219,7 @@ def start():
                                 if not villagetrs is None:
                                     saveVillagetrs(fo,villagetrs)
                                     print "省份："+pro.get("name")+"|城市："+cityInfo.get("name")+"|城区："+county.get("name")+"|城镇："+tower.get("name")+"|村居委会街道办数目：",len(villagetrs)
-                                        
+    fo.close()                               
     endtime = datetime.datetime.now()
     print "用时（s）：",(endtime - starttime).seconds
     
