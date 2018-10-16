@@ -186,7 +186,7 @@ def startX():
     print "用时（s）：",(endtime - starttime).seconds                                 
                                     
                                     
-# 1.获取省份内容  - 简单模式
+# 1.获取地域内容  - 简单模式（中途可能会由于频繁拉取而报错）
 def start():
     
     starttime = datetime.datetime.now()##开始时间
